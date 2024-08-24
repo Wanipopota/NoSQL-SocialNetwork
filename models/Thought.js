@@ -1,17 +1,18 @@
-const { Schema, model, Types } = require('mongoose');
-const moment = require('moment');
+const { Schema, model } = require('mongoose');
 
-// Schema for Reaction - This will be a subdocument schema within the `Thought` model.
+// Reaction Schema- This will not be a model, but rather will be used as the `reaction` field's subdocument schema in the `Thought` model.
 const reactionSchema = new Schema(
     {
         reactionId: {
             type: Schema.Types.ObjectId,
-            default: () => new Types.ObjectId(),
+            default: () => new Types.ObjectId()
+
         },
         reactionBody: {
             type: String,
-            required: true,
-            maxlength: 280,
+            required:true,
+            maxlength: 280
+
         },
         username: {
             type: String,
@@ -20,7 +21,8 @@ const reactionSchema = new Schema(
         createdAt: {
             type: Date,
             default: Date.now,
-            get: (timestamp) => moment(timestamp).format('MMM DD, YYYY [at] hh:mm a'),
+            get: createdAtDate => moment(createdAtDate).format('MMM DD, YYYY [at] hh:mm a')
+
         },
     },
     {
@@ -31,19 +33,23 @@ const reactionSchema = new Schema(
     }
 );
 
-// Schema to create the Thought model
+
+
+// Schema to create Thought model
 const thoughtSchema = new Schema(
     {
         thoughtText: {
             type: String,
             required: true,
             minlength: 1,
-            maxlength: 280,
+            maxlength: 280
+
         },
         createdAt: {
             type: Date,
             default: Date.now,
-            get: (timestamp) => moment(timestamp).format('MMM DD, YYYY [at] hh:mm a'),
+            get: createdAtDate => moment(createdAtDate).format('MMM DD, YYYY [at] hh:mm a')
+
         },
         username: {
             type: String,
@@ -52,6 +58,8 @@ const thoughtSchema = new Schema(
         reactions: [reactionSchema],
     },
     {
+        // Mongoose supports two Schema options to transform Objects after querying MongoDb: toJSON and toObject.
+        // Here we are indicating that we want virtuals to be included with our response, overriding the default behavior
         toJSON: {
             virtuals: true,
         },
@@ -59,12 +67,12 @@ const thoughtSchema = new Schema(
     }
 );
 
-// Virtual field `reactionCount` to get the number of reactions
-thoughtSchema.virtual('reactionCount').get(function () {
+// Create a virtual called `reactionCount` that retrieves the length of the thought's `reactions` array field on query.
+thoughtSchema.virtual(`reactionCount`).get(function () {
     return this.reactions.length;
 });
 
-// Initialize and export the Thought model
+// Initialize our Post model
 const Thought = model('Thought', thoughtSchema);
 
 module.exports = Thought;
